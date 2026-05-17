@@ -1,0 +1,83 @@
+name: Weekly Server Cleanup
+
+on:
+  schedule:
+    # Runs every Sunday at 3:00 AM UTC (low traffic time)
+    - cron: '0 3 * * 0'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  cleanup:
+    name: Clean Docker and Backups
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run cleanup on production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 10m
+          script: |
+            set -e
+            
+            echo "🧹 Starting weekly server cleanup..."
+            echo "📅 Run date: $(date)"
+            
+            # Navigate to application directory
+            cd /var/www/mobilklar/EdTech-Platform || exit 1
+            
+            # Pull latest cleanup scripts
+            echo "⬇️  Pulling latest cleanup scripts..."
+            git pull origin main
+            
+            # Make scripts executable
+            chmod +x docker-cleanup.sh backup-cleanup.sh
+            
+            # Run Docker cleanup
+            echo ""
+            echo "🐳 Running Docker cleanup..."
+            ./docker-cleanup.sh
+            
+            # Run backup cleanup
+            echo ""
+            echo "🗄️  Running backup cleanup..."
+            ./backup-cleanup.sh || echo "⚠️  No backups to clean or backup directory not found"
+            
+            # Show final disk usage
+            echo ""
+            echo "📊 Final disk usage report:"
+            df -h / | grep -v Filesystem
+            
+            # Show available space
+            AVAILABLE=$(df -h / | tail -1 | awk '{print $4}')
+            echo ""
+            echo "✅ Cleanup complete! Available space: $AVAILABLE"
+            
+            # Alert if disk usage is still high (>80%)
+            USAGE=$(df / | tail -1 | awk '{print $5}' | sed 's/%//')
+            if [ $USAGE -gt 80 ]; then
+              echo "⚠️  WARNING: Disk usage is still high ($USAGE%)"
+              echo "    Consider manual review of:"
+              echo "    - /var/www/mobilklar/EdTech-Platform"
+              echo "    - /var/www/mobilklar/EdTechDashboard"
+              echo "    - /var/log"
+              echo "    - Docker volumes: docker volume ls"
+            else
+              echo "✅ Disk usage is healthy ($USAGE%)"
+            fi
+
+      - name: Cleanup notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Weekly cleanup completed successfully!"
+          else
+            echo "❌ Cleanup failed! Check logs above."
+            exit 1
+          fi

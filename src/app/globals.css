@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  
+ font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pagination-container .page-item {
+  display: flex;
+  inline-size: 45px;
+  block-size: 45px;
+  justify-content: center;
+  align-items: center;
+  margin: 0 4px;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  color: #333;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-container .page-item:hover {
+  background-color: #d1d1d1;
+}
+
+.pagination-container .page-item.active {
+  background-color: #3FB249;
+  color: white;
+}
+
+
+.custom-class{
+  background-color: b;
+}
+
+.header-font{
+  font-family: "DM Sans", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+
+.responsive-padding {
+  padding-left: 1rem;  /* px-4 */
+  padding-right: 1rem;
+}
+
+/* sm:px-6 => @media (min-width: 640px) */
+@media (min-width: 640px) {
+  .responsive-padding {
+    padding-left: 1rem;  /* px-6 */
+    padding-right: 1rem;
+  }
+}
+
+/* md:px-8 => @media (min-width: 768px) */
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding-left: 1rem;  /* px-8 */
+    padding-right: 1rem;
+  }
+}
+
+/* lg:px-12 => @media (min-width: 1024px) */
+@media (min-width: 1024px) {
+  .responsive-padding {
+    padding-left: 1rem;  /* px-12 */
+    padding-right: 1rem;
+  }
+}
+
+/* xl:px-16 => @media (min-width: 1280px) */
+@media (min-width: 1280px) {
+  .responsive-padding {
+    padding-left: 5rem;  /* px-16 */
+    padding-right: 5rem;
+  }
+}
+
+
+
+@keyframes tap {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.hand-tap {
+  animation: tap 1s ease-in-out infinite;
+}
+
+
+/* for Google Translate   */   
+
+/* Hide the Google Translate banner */
+
+.antialiased{
+    position: inherit ! important;
+}
+
+/* Hide the Google Translate toolbar */
+.goog-te-gadget {
+  display: none !important;
+} 
+/* Hide the Google Translate banner */
+.goog-te-banner-frame {
+  display: none !important;
+}
+/* Remove pop-up preview */
+.goog-te-balloon-frame {
+  display: none !important;
+}
+ 
+/* Hide the floating dropdown */
+.goog-te-menu-frame {
+  display: none !important;
+}
+ 
+/* Hide Google Translate Top Bar */
+.skiptranslate {
+  display: none !important;
+}
+ 
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc {
+  display: none !important;
+}
+ 
+.VIpgJd-ZVi9od-aZ2wEe {
+  display: none !important;
+} 
+
+/* ::selection {
+  background: #e8eefe !important;
+  color: white !important;
+} */
+
+/* finish there  */ 
+
+/*
+ * The 'notranslate' class is automatically recognized by Google Translate.
+ * No CSS needed - just add class="notranslate" to elements that should not be translated.
+ * This selector ensures proper attribute-based exclusion as well.
+ */
+.notranslate,
+[translate="no"] {
+  /* These elements should not be translated by Google Translate */
+} 
+
+

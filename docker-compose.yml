@@ -1,0 +1,30 @@
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mobilklar-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - mobilklar_shared
+    expose:
+      - "3000"
+    # SECURITY: Port 3000 NOT exposed to internet - only Caddy can access via Docker network
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      
+networks:
+  mobilklar_shared:
+    external: true

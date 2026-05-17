@@ -1,0 +1,96 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 15m
+          script: |
+            set -e
+            
+            echo "📦 Starting deployment to mobilklar.no..."
+            
+            # Navigate to application directory
+            cd /var/www/mobilklar/EdTech-Platform || exit 1
+            
+            # Pull latest changes
+            echo "⬇️  Pulling latest code from main branch..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Stop existing containers gracefully
+            echo "🛑 Stopping existing containers..."
+            docker compose down --timeout 30 || true
+            
+            # Let docker compose manage the network automatically
+            # The root docker-compose.yml in /var/www/mobilklar creates it
+            
+            # Clean up old images and containers
+            echo "🧹 Cleaning up old Docker resources..."
+            docker image prune -af --filter "until=24h" || true
+            docker container prune -f || true
+            
+            # Build new images (no cache for clean build)
+            echo "🔨 Building new Docker images..."
+            docker compose build --no-cache --pull
+            
+            # Start all services
+            echo "🚀 Starting services..."
+            docker compose up -d
+            
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to be healthy..."
+            sleep 10
+            
+            # Verify containers are running
+            if docker compose ps | grep -q "Up"; then
+              echo "✅ Services are running:"
+              docker compose ps
+              
+              # Check logs for errors
+              echo "📋 Recent logs:"
+              docker compose logs --tail=20
+              
+              # Post-deployment cleanup (safe for production)
+              echo ""
+              echo "🧹 Running post-deployment cleanup..."
+              chmod +x docker-cleanup.sh
+              ./docker-cleanup.sh || echo "⚠️  Cleanup script not found or failed (non-critical)"
+              
+              echo ""
+              echo "✅ Deployment completed successfully!"
+              echo "🌐 Site is live at: https://mobilklar.no"
+            else
+              echo "❌ Deployment failed - services not running"
+              docker compose ps
+              docker compose logs --tail=50
+              exit 1
+            fi
+
+      - name: Deployment notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment to mobilklar.no completed successfully!"
+          else
+            echo "❌ Deployment failed! Check logs above."
+            exit 1
+          fi
