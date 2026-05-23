@@ -257,7 +257,7 @@ const QuizApp = () => {
                 >
                   <X size={24} />
                 </button>
-                <h2 className="text-3xl font-bold text-orange-500 mb-2">
+                <h2 className="text-3l font-bold text-orange-500 mb-2">
                   Modul fullført!
                 </h2>
                 <p className="text-gray-600 mb-6">
@@ -271,7 +271,7 @@ const QuizApp = () => {
                     <NavigateButton/>
                   </div>
                   <div onClick={startLeaningHanlder}>
-                    <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
+                    <button className="mt-6 bg-[#FF9E1C] text-white px-3 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
                       Neste modul
                     </button>
                   </div>

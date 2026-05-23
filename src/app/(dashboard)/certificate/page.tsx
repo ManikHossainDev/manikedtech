@@ -176,7 +176,7 @@ const Page = () => {
     return;
   }
   
-  if (res?.data?.code === 200) {
+  if (res?.data?.code === 201) {
     message.success("Anmeldelse sendt inn!");
     handleCloseModal();
   }

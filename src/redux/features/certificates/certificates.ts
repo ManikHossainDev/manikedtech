@@ -22,8 +22,18 @@ const Certificates = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+    getReviews: builder.query({
+      query: () => ({
+        url: "/reviews",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useCertificatesLockQuery, useUpdateParentTipsMutation, useCreateReviewsMutation } =
-  Certificates;
+export const { 
+  useCertificatesLockQuery, 
+  useUpdateParentTipsMutation, 
+  useCreateReviewsMutation,
+  useGetReviewsQuery 
+} = Certificates;

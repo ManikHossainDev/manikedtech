@@ -27,40 +27,41 @@ interface QuizQuestion {
 const Page = () => {
   const [currentModule, setCurrentModule] = useState(1);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedText, setSelectedText] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showResult, setShowResult] = useState(false);
   const searchParams = useSearchParams();
   const childId = searchParams.get("childId");
 
-           const router = useRouter()
-            const [updateCheckPoints] = useUpdateCheckPointsMutation();
-            const startLeaningHanlder = async () => {
-            try {
-              const introBody = {
-                moduleNumber: 6,
-                checkpoint: "quiz",
-                childProfileId: childId,
-                data: {
-                    score:correctAnswers,
-                    passed:true,
-                }
-              };
-              await updateCheckPoints({ updatesBody: introBody }).unwrap();
-              const learningBody = {
-                moduleNumber: 7,
-                checkpoint: "intro_page",
-                childProfileId: childId,
-              };
-              const response = await updateCheckPoints({
-                updatesBody: learningBody,
-              }).unwrap();
-              if (response?.code === 200) {
-                router.push(`/modulesseven?childId=${childId}`);
-              }
-            } catch (error) {
-              console.log(error)
-            }
-          };
+  const router = useRouter();
+  const [updateCheckPoints] = useUpdateCheckPointsMutation();
+  const startLeaningHanlder = async () => {
+    try {
+      const introBody = {
+        moduleNumber: 6,
+        checkpoint: "quiz",
+        childProfileId: childId,
+        data: {
+          score: correctAnswers,
+          passed: true,
+        },
+      };
+      await updateCheckPoints({ updatesBody: introBody }).unwrap();
+      const learningBody = {
+        moduleNumber: 7,
+        checkpoint: "intro_page",
+        childProfileId: childId,
+      };
+      const response = await updateCheckPoints({
+        updatesBody: learningBody,
+      }).unwrap();
+      if (response?.code === 200) {
+        router.push(`/modulesseven?childId=${childId}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   // module id six
   const id = "69366f0df4d0d2d1e21e1d67";
@@ -68,6 +69,7 @@ const Page = () => {
   const quiz = data?.data?.quiz;
   const quizQuestions = quiz?.questions || [];
   const parentTip = data?.data?.parentTip?.content;
+
   // Transform API data to match UI expectations
   const quizData: QuizQuestion[] =
     quizQuestions?.map((question: any) => {
@@ -86,7 +88,10 @@ const Page = () => {
 
   const currentQuestion = quizData[currentModule - 1];
 
-  const handleAnswerSelect = (index: number) => setSelectedAnswer(index);
+  const handleAnswerSelect = (index: number, text: string) => {
+    setSelectedAnswer(index);
+    setSelectedText(text);
+  };
 
   const handleNext = () => {
     if (selectedAnswer === null) return;
@@ -97,6 +102,7 @@ const Page = () => {
     } else {
       setCurrentModule(currentModule + 1);
       setSelectedAnswer(null);
+      setSelectedText(null);
     }
   };
 
@@ -118,6 +124,7 @@ const Page = () => {
   const resetQuiz = () => {
     setCurrentModule(1);
     setSelectedAnswer(null);
+    setSelectedText(null);
     setAnswers({});
     setShowResult(false);
   };
@@ -146,8 +153,8 @@ const Page = () => {
             Feil ved lasting av quiz
           </h2>
           <p className="text-gray-600 mb-4">
-            Det oppsto et problem med lasting av quiz-spørsmålene. Vennligst prøv igjen
-            senere.
+            Det oppsto et problem med lasting av quiz-spørsmålene. Vennligst
+            prøv igjen senere.
           </p>
           <Link href={`/modulesSixGame?childId=${childId}`}>
             <button className="bg-orange-400 text-white px-6 py-2 rounded-full hover:bg-[#FF9E1C]">
@@ -165,7 +172,9 @@ const Page = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center p-4">
           <h2 className="text-2xl font-bold text-red-500 mb-2">Quiz-feil</h2>
-          <p className="text-gray-600 mb-4">Kunne ikke laste inn gjeldende spørsmål.</p>
+          <p className="text-gray-600 mb-4">
+            Kunne ikke laste inn gjeldende spørsmål.
+          </p>
           <Link href={`/modulesSixGame?childId=${childId}`}>
             <button className="bg-orange-400 text-white px-6 py-2 rounded-full hover:bg-[#FF9E1C]">
               Tilbake til modul
@@ -177,7 +186,7 @@ const Page = () => {
   }
 
   return (
-    <div className="relative min-h-screen w-full xxl:container  mx-auto px-2 xl:px-0">
+    <div className="relative min-h-screen w-full xxl:container mx-auto px-2 xl:px-0">
       {/* Header */}
       <div className="mx-auto mb-6 mt-3">
         <Link href={`/modulesSixGame?childId=${childId}`}>
@@ -230,7 +239,7 @@ const Page = () => {
             {currentQuestion.options.map((option: string, index: number) => (
               <button
                 key={index}
-                onClick={() => handleAnswerSelect(index)}
+                onClick={() => handleAnswerSelect(index, option)}
                 className={`text-left p-4 rounded-xl border-2 transition-all duration-200 ${
                   selectedAnswer === index
                     ? "border-orange-400 bg-orange-50"
@@ -241,6 +250,21 @@ const Page = () => {
               </button>
             ))}
           </div>
+
+          {/* Feedback Text */}
+          {selectedAnswer !== null && (
+            <p
+              className={`mt-4 text-base font-semibold ${
+                selectedAnswer === currentQuestion.correct
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {selectedAnswer === currentQuestion.correct
+                ? `✓ Riktig: ${selectedText}`
+                : `✗ Feil: ${selectedText}`}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end">
@@ -290,9 +314,9 @@ const Page = () => {
                     <NavigateButton />
                   </div>
                   <div onClick={startLeaningHanlder}>
-                  <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
-                    Neste modul
-                  </button>
+                    <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
+                      Neste modul
+                    </button>
                   </div>
                 </div>
               </div>
@@ -301,9 +325,7 @@ const Page = () => {
             // Error Modal
             <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-8 max-w-md mx-4 text-center relative">
-                <p className="text-gray-600 mb-2">
-                  Noen svar var feil.
-                </p>
+                <p className="text-gray-600 mb-2">Noen svar var feil.</p>
                 <p className="text-2xl font-bold text-red-600 mt-4">
                   poeng: {correctAnswers} / {quizData.length}
                 </p>

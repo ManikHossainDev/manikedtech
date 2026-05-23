@@ -14,38 +14,40 @@ import NavigateButton from "@/utils/NavigateButton";
 const Page = () => {
   const [currentModule, setCurrentModule] = useState(1);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedText, setSelectedText] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResult, setShowResult] = useState(false);
   const searchParams = useSearchParams();
   const childId = searchParams.get("childId");
 
-              const router = useRouter()
-                const [updateCheckPoints] = useUpdateCheckPointsMutation();
-                const startLeaningHanlder = async () => {
-                try {
-                  const introBody = {
-                    moduleNumber: 8,
-                    checkpoint: "quiz",
-                    childProfileId: childId,
-                    data: {
-                        score:correctAnswers,
-                        passed:true,
-                    }
-                  };
-                 const response =  await updateCheckPoints({ updatesBody: introBody }).unwrap();
-                 console.log(response)
-                  if (response?.code === 200) {
-                    router.push(`/CertificateDownloard?childId=${childId}`);
-                  }
-                } catch (error) {
-                  console.log(error)
-                }
-              };
+  const router = useRouter();
+  const [updateCheckPoints] = useUpdateCheckPointsMutation();
+  const startLeaningHanlder = async () => {
+    try {
+      const introBody = {
+        moduleNumber: 8,
+        checkpoint: "quiz",
+        childProfileId: childId,
+        data: {
+          score: correctAnswers,
+          passed: true,
+        },
+      };
+      const response = await updateCheckPoints({ updatesBody: introBody }).unwrap();
+      console.log(response);
+      if (response?.code === 200) {
+        router.push(`/CertificateDownloard?childId=${childId}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const id = "6936776976dca28d7e43e6c7";
   const { data, isLoading } = useGetModulesByIdQuery(id);
   const { parentTip } = data?.data || {};
   const quiz = data?.data?.quiz;
+
   // Show loading state
   if (isLoading || !quiz) {
     return (
@@ -58,7 +60,10 @@ const Page = () => {
   const questions = quiz.questions || [];
   const currentQuestion = questions[currentModule - 1];
 
-  const handleAnswerSelect = (optionId: string) => setSelectedAnswer(optionId);
+  const handleAnswerSelect = (optionId: string, optionText: string) => {
+    setSelectedAnswer(optionId);
+    setSelectedText(optionText);
+  };
 
   const handleNext = () => {
     setAnswers({ ...answers, [currentModule]: selectedAnswer! });
@@ -67,6 +72,7 @@ const Page = () => {
     } else {
       setCurrentModule(currentModule + 1);
       setSelectedAnswer(null);
+      setSelectedText(null);
     }
   };
 
@@ -82,6 +88,7 @@ const Page = () => {
   const resetQuiz = () => {
     setCurrentModule(1);
     setSelectedAnswer(null);
+    setSelectedText(null);
     setAnswers({});
     setShowResult(false);
   };
@@ -93,7 +100,7 @@ const Page = () => {
   const passed = scorePercentage >= passingScore;
 
   return (
-    <div className="relative min-h-screen w-full xxl:container  mx-auto px-2 xl:px-0">
+    <div className="relative min-h-screen w-full xxl:container mx-auto px-2 xl:px-0">
       {/* Header */}
       <div className="mx-auto mb-6 mt-3">
         <Link href={`/modulesEightTime?childId=${childId}`}>
@@ -146,7 +153,7 @@ const Page = () => {
             {currentQuestion.options.map((option: any) => (
               <button
                 key={option.id}
-                onClick={() => handleAnswerSelect(option.id)}
+                onClick={() => handleAnswerSelect(option.id, option.text)}
                 className={`text-left p-4 rounded-xl border-2 transition-all duration-200 ${
                   selectedAnswer === option.id
                     ? "border-orange-400 bg-orange-50"
@@ -157,6 +164,21 @@ const Page = () => {
               </button>
             ))}
           </div>
+
+          {/* Feedback Text */}
+          {selectedAnswer !== null && (
+            <p
+              className={`mt-4 text-base font-semibold ${
+                selectedAnswer === currentQuestion.correctAnswer
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {selectedAnswer === currentQuestion.correctAnswer
+                ? `✓ Riktig: ${selectedText}`
+                : `✗ Feil: ${selectedText}`}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end">
@@ -207,9 +229,9 @@ const Page = () => {
                     <NavigateButton />
                   </div>
                   <div onClick={startLeaningHanlder}>
-                  <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
-                    Get Certificate
-                  </button>
+                    <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
+                      Get Certificate
+                    </button>
                   </div>
                 </div>
               </div>
@@ -230,7 +252,7 @@ const Page = () => {
                   <br />
                   You need {passingScore}% to pass.
                 </p>
-                <Image src={error} alt="error" className="mx-auto mb-4"/>
+                <Image src={error} alt="error" className="mx-auto mb-4" />
               </div>
             </div>
           )}

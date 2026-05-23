@@ -294,7 +294,7 @@ const Page = () => {
                     <NavigateButton />
                   </div>
                   <div onClick={startLeaningHanlder}>
-                  <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
+                  <button className="mt-6 bg-[#FF9E1C] text-white px-3 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
                     Neste modul
                   </button>
                   </div>

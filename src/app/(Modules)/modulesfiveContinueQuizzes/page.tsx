@@ -14,53 +14,46 @@ import NavigateButton from "@/utils/NavigateButton";
 const Page = () => {
   const [currentModule, setCurrentModule] = useState(1);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedText, setSelectedText] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResult, setShowResult] = useState(false);
   const searchParams = useSearchParams();
   const childId = searchParams.get("childId");
 
-         const router = useRouter()
-          const [updateCheckPoints] = useUpdateCheckPointsMutation();
-          const startLeaningHanlder = async () => {
-          try {
-            const introBody = {
-              moduleNumber: 5,
-              checkpoint: "quiz",
-              childProfileId: childId,
-              data: {
-                  score:results,
-                  passed:true,
-              }
-            };
-            await updateCheckPoints({ updatesBody: introBody }).unwrap();
-            const learningBody = {
-              moduleNumber: 6,
-              checkpoint: "intro_page",
-              childProfileId: childId,
-            };
-            const response = await updateCheckPoints({
-              updatesBody: learningBody,
-            }).unwrap();
-            if (response?.code === 200) {
-              router.push(`/modulessix?childId=${childId}`);
-            }
-          } catch (error) {
-            console.log(error)
-          }
-        };
-  
+  const router = useRouter();
+  const [updateCheckPoints] = useUpdateCheckPointsMutation();
 
-  const { data, isLoading, isError } = useGetModulesByIdQuery(
-    "69366d40f4d0d2d1e21e1d61"
-  );
+  const startLeaningHanlder = async () => {
+    try {
+      const introBody = {
+        moduleNumber: 5,
+        checkpoint: "quiz",
+        childProfileId: childId,
+        data: { score: results, passed: true },
+      };
+      await updateCheckPoints({ updatesBody: introBody }).unwrap();
+      const learningBody = {
+        moduleNumber: 6,
+        checkpoint: "intro_page",
+        childProfileId: childId,
+      };
+      const response = await updateCheckPoints({ updatesBody: learningBody }).unwrap();
+      if (response?.code === 200) {
+        router.push(`/modulessix?childId=${childId}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const { data, isLoading, isError } = useGetModulesByIdQuery("69366d40f4d0d2d1e21e1d61");
   const { parentTip } = data?.data || {};
-  // Extract quiz data from API
   const quiz = data?.data?.quiz || {};
   const quizQuestions = quiz.questions || [];
   const quizDescription = quiz.description || "";
   const passingScore = quiz.passingScore || 70;
 
-  // Transform API data to match the component's expected format
   const quizData = quizQuestions.map((q: any) => ({
     module: q.questionNumber,
     question: q.question,
@@ -70,10 +63,9 @@ const Page = () => {
     points: q.points,
   }));
 
-  // Show loading state
   if (isLoading) {
     return (
-      <div className="relative min-h-screen w-full xxl:container  mx-auto px-2 xl:px-0 flex items-center justify-center">
+      <div className="relative min-h-screen w-full xxl:container mx-auto px-2 xl:px-0 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Laster quiz...</p>
@@ -82,10 +74,9 @@ const Page = () => {
     );
   }
 
-  // Show error state
   if (isError || quizData.length === 0) {
     return (
-      <div className="relative min-h-screen w-full xxl:container  mx-auto px-2 xl:px-0 flex items-center justify-center">
+      <div className="relative min-h-screen w-full xxl:container mx-auto px-2 xl:px-0 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Kunne ikke laste quiz</p>
           <Link href={`/modulesfiveGame?childId=${childId}`}>
@@ -100,38 +91,49 @@ const Page = () => {
 
   const currentQuestion = quizData[currentModule - 1];
 
+  // ✅ Step 1: শুধু option select করবে
   const handleAnswerSelect = (optionId: string) => {
-    // Extract the letter (A, B, C) from the option text
+    if (showFeedback) return; // feedback দেখানোর সময় change করা যাবে না
     const letter = optionId.split(")")[0];
+    const text = optionId.split(")")[1]?.trim();
     setSelectedAnswer(letter);
+    setSelectedText(text);
   };
 
+  // ✅ Step 2: Next click এ দুটো কাজ
+  // - যদি feedback না দেখানো হয় → feedback দেখাও
+  // - যদি feedback দেখানো হয় → পরের question এ যাও
   const handleNext = () => {
-    setAnswers({ ...answers, [currentModule]: selectedAnswer! });
+  // ✅ Feedback দেখাও
+  setShowFeedback(true);
+  setAnswers({ ...answers, [currentModule]: selectedAnswer! });
+
+  // ✅ 1 সেকেন্ড পরে পরের question এ যাও
+  setTimeout(() => {
     if (currentModule === quizData.length) {
       setShowResult(true);
     } else {
       setCurrentModule(currentModule + 1);
       setSelectedAnswer(null);
+      setSelectedText(null);
+      setShowFeedback(false);
     }
-  };
+  }, 1000);
+};
 
   const checkResults = () => {
     let correctCount = 0;
     let totalPoints = 0;
     let earnedPoints = 0;
-
     Object.keys(answers).forEach((module) => {
       const idx = parseInt(module) - 1;
       const question = quizData[idx];
       totalPoints += question.points;
-
       if (answers[module] === question.correct) {
         correctCount++;
         earnedPoints += question.points;
       }
     });
-
     const percentage = (earnedPoints / totalPoints) * 100;
     return { correctCount, percentage, earnedPoints, totalPoints };
   };
@@ -139,16 +141,17 @@ const Page = () => {
   const resetQuiz = () => {
     setCurrentModule(1);
     setSelectedAnswer(null);
+    setSelectedText(null);
+    setShowFeedback(false);
     setAnswers({});
     setShowResult(false);
   };
 
   const results = checkResults();
-  console.log(results)
   const allCorrect = results.percentage >= passingScore;
 
   return (
-    <div className="relative min-h-screen w-full xxl:container  mx-auto px-2 xl:px-0">
+    <div className="relative min-h-screen w-full xxl:container mx-auto px-2 xl:px-0">
       {/* Header */}
       <div className="mx-auto mb-6 mt-3">
         <Link href={`/modulesfiveGame?childId=${childId}`}>
@@ -159,7 +162,7 @@ const Page = () => {
         </Link>
       </div>
 
-      {/* Quiz Card (Always visible) */}
+      {/* Quiz Card */}
       <div className="mx-auto bg-white rounded-2xl shadow-lg md:p-4 relative z-10">
         <div className="bg-orange-100 rounded-2xl p-4 flex w-fit items-center mb-3">
           <ArrowLeft size={20} className="text-orange-600 mr-3" />
@@ -170,11 +173,8 @@ const Page = () => {
 
         <div className="mb-6">
           <div className="inline-block bg-white border-2 border-gray-300 rounded-lg px-4 py-2 mb-4">
-            <span className="font-semibold text-gray-700">
-              Quiz {currentModule}
-            </span>
+            <span className="font-semibold text-gray-700">Quiz {currentModule}</span>
           </div>
-
           <div className="flex items-center gap-3 mb-2">
             <span className="text-sm font-medium text-gray-600">Framgang</span>
             <div className="flex-1 bg-gray-200 rounded-full h-2">
@@ -200,80 +200,93 @@ const Page = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {currentQuestion.options.map((option: string, index: number) => {
               const optionLetter = option.split(")")[0];
+              const isSelected = selectedAnswer === optionLetter;
+              const isCorrect = optionLetter === currentQuestion.correct;
+
               return (
                 <button
                   key={index}
                   onClick={() => handleAnswerSelect(option)}
-                  className={`text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                    selectedAnswer === optionLetter
-                      ? "border-orange-400 bg-orange-50"
+                  disabled={showFeedback}
+                  className={`text-left p-4 rounded-xl border-2 transition-all duration-200
+                    ${showFeedback
+                      ? isCorrect
+                        ? "border-green-500 bg-green-50"       // সঠিক উত্তর সবুজ
+                        : isSelected
+                        ? "border-red-400 bg-red-50"           // ভুল উত্তর লাল
+                        : "border-gray-200 bg-white opacity-50" // বাকিগুলো dim
+                      : isSelected
+                      ? "border-orange-400 bg-orange-50"       // selected হলে orange
                       : "border-gray-200 hover:border-gray-300 bg-white"
-                  }`}
+                    }
+                  `}
                 >
                   <span className="text-gray-700">{option}</span>
                 </button>
               );
             })}
           </div>
-        </div>
 
-        <div className="flex justify-end">
-          {selectedAnswer !== null && (
-            <button
-              onClick={handleNext}
-              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-400 transition-colors flex items-center gap-2"
+          {/* ✅ Feedback - Next click এর পরে দেখাবে */}
+          {showFeedback && (
+            <p
+              className={`mt-4 text-base font-semibold ${
+                selectedAnswer === currentQuestion.correct
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
             >
-              Neste
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-              >
-                <path d="M6 3l5 5-5 5V3z" />
-              </svg>
-            </button>
+              {selectedAnswer === currentQuestion.correct
+                ? `✓ Riktig: ${selectedText}`
+                : `✗ Feil: ${selectedText}`}
+            </p>
           )}
         </div>
+
+        {/* ✅ Next Button */}
+        <div className="flex justify-end">
+            {selectedAnswer !== null && (
+              <button
+                onClick={handleNext}
+                disabled={showFeedback} // ✅ একবার click এর পর disable
+                className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-400 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                Neste
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M6 3l5 5-5 5V3z" />
+                </svg>
+              </button>
+            )}
+          </div>
       </div>
 
-      {/* ✅ Overlay Modals */}
+      {/* Overlay Modals */}
       {showResult && (
         <>
           {allCorrect ? (
-            // Success Modal
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-8 max-w-md mx-4 text-center relative">
-                <button
-                  onClick={resetQuiz}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                >
+                <button onClick={resetQuiz} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                   <X size={24} />
                 </button>
-                <h2 className="text-3xl font-bold text-orange-500 mb-2">
-                  Modul fullført!
-                </h2>
+                <h2 className="text-3xl font-bold text-orange-500 mb-2">Modul fullført!</h2>
                 <p className="text-gray-600 mb-2">Du lærte det veldig bra!</p>
                 <p className="text-gray-600 mb-6">
-                  Poeng: {results.percentage.toFixed(1)}% (
-                  {results.correctCount}/{quizData.length})
+                  Poeng: {results.percentage.toFixed(1)}% ({results.correctCount}/{quizData.length})
                 </p>
                 <p>{parentTip?.content}</p>
                 <Image src={success} alt="success" />
                 <div className="flex justify-between items-center">
-                              <div>
-                              <NavigateButton />
-                            </div>
-                            <div onClick={startLeaningHanlder}>
-                        <button className="mt-6 bg-[#FF9E1C] text-white px-8 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
-                        Neste modul
-                      </button>
-                     </div>
+                  <div><NavigateButton /></div>
+                  <div onClick={startLeaningHanlder}>
+                    <button className="mt-6 bg-[#FF9E1C] text-white px-2 py-3 rounded-full hover:bg-[#FF9E1C] transition-colors font-medium">
+                      Neste modul
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           ) : (
-            // Error Modal
             <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-8 max-w-md mx-4 text-center relative">
                 <button
@@ -283,8 +296,7 @@ const Page = () => {
                   Prøv igjen
                 </button>
                 <p className="text-gray-600 mb-6 mt-5">
-                  Noen svar var feil. Poengsum:{" "}
-                  {results.percentage.toFixed(1)}%
+                  Noen svar var feil. Poengsum: {results.percentage.toFixed(1)}%
                 </p>
                 <Image src={error} alt="error" className="mx-auto mb-4" />
               </div>
