@@ -30,6 +30,7 @@ const HeroBannerSection: React.FC<HeroBannerSectionProps> = ({ heroData }) => {
     ? process.env.NEXT_PUBLIC_FRONT_END_URL
     : "https://mobilklar.no";
   const paymentExist = useSelector(selectPayment);
+  console.log("Payment status from Redux:", paymentExist);
   const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const { data: paymentStatus } = useGetPaymentStatusQuery(
@@ -149,7 +150,7 @@ const HeroBannerSection: React.FC<HeroBannerSectionProps> = ({ heroData }) => {
               className="bg-[#FF9E1C] hover:bg-[#FF9E1C] flex items-center space-x-3 text-white font-semibold px-3 md:px-8 py-2 md:py-3 text-xs md:text-base rounded-lg transition-colors duration-200 shadow-md"
             >
               <h1>
-                {!paymentExist?.hasLifetimeAccess ? `Kjøp nå – 19 $` : displayCtaText}
+                {!paymentExist?.hasLifetimeAccess ? displayCtaText : "Start læring"}
               </h1>{" "}
               <ArrowBigRight />
             </button>

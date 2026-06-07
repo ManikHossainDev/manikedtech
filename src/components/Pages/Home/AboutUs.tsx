@@ -52,7 +52,6 @@ const AboutUs: React.FC<AboutUsProps> = ({ aboutData }) => {
               <span className="font-bold" style={{ color: "#FF9E1C" }}>{displayTitle}</span>
             )}
           </h2>
-          <span className="text-xl md:text-3xl lg:text-5xl">🔥</span>
         </div>
         {/* Paragraphs */}
         <div className="md:max-w-5xl mx-auto space-y-3 text-justify md:space-y-6 text-gray-700 leading-relaxed md:text-center">

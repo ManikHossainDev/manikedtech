@@ -149,7 +149,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import AOS from 'aos';
-import 'aos/dist/aos.css';
+// import 'aos/dist/aos.css';
 
 import React from 'react';
 import Phonebasics from "@/assets/svg/Phonebasics.png"
@@ -238,7 +238,6 @@ const LearningModules: React.FC<LearningModulesProps> = ({ featuresData }) => {
           <h2 className="text-md sm:text-xl md:text-3xl lg:text-[48px] font-bold text-gray-900">
             {sectionTitle}
           </h2>
-          <span className="text-xl md:text-3xl lg:text-5xl">🔥</span>
         </div>
         <p className='text-center md:pt-5 text-xs md:text-base lg:text-lg'>{sectionDescription}</p>
       </div>

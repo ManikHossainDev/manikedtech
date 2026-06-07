@@ -43,7 +43,6 @@ const MobilklarWorks: React.FC<MobilklarWorksProps> = ({ howItWorksData }) => {
           <h2 className="text-xl md:text-3xl lg:text-[48px] font-bold text-gray-900">
             {displayTitle}
           </h2>
-          <span className="text-xl md:text-3xl lg:text-5xl">🔥</span>
         </div>
 
         {/* Steps Grid */}

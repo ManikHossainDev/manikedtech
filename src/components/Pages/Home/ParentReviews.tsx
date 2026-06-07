@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState } from "react";
 import ReviewCard from "./ReviewCard";
 import { useGetReviewsQuery } from "@/redux/features/certificates/certificates";
 
-const ParentReviews = () => {
+const ParentReviews = ({quote}:any) => {
+    const displayTitle = quote?.title || 'Slik fungerer Mobilklar';
   const [isPaused, setIsPaused] = useState(false);
   const { data } = useGetReviewsQuery({});
 
@@ -17,9 +19,9 @@ const ParentReviews = () => {
       <section className="w-full xxl:container mx-auto md:pt-[100px] pt-10">
         <div className="pl-4 xl:pl-0 flex items-center gap-3 mb-8">
           <h2 className="text-xl md:text-3xl lg:text-[48px] font-bold text-gray-900">
-            Foreldre<span className="font-bold" style={{ color: '#FF9E1C' }}>omtaler</span>
+            {displayTitle}
           </h2>
-          <span className="text-xl md:text-3xl lg:text-5xl">🔥</span>
+         
         </div>
 
         <div className="relative overflow-hidden">

@@ -57,7 +57,6 @@ const WhyMobilklar: React.FC<WhyMobilklarProps> = ({ whyMobilklarData, quoteData
           <h2 className="text-xl md:text-3xl lg:text-[48px] font-bold text-gray-900">
             {displayTitle}
           </h2>
-          <span className="text-xl md:text-3xl lg:text-5xl">🔥</span>
         </div>
         <p
           className="md:text-center text-xs md:text-base lg:text-lg mx-auto animate-fade-in opacity-0"

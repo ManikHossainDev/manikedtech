@@ -15,7 +15,7 @@ const HomePage = async () => {
   // Fetch landing page data from API
   // Locale defaults to 'en'; can be extended with URL params in the future
   const landingData = await fetchLandingPageData('en');
-
+  console.log(landingData);
   return (
     <section>
       <HeroBannerSection heroData={landingData.hero ?? undefined} />
@@ -23,7 +23,7 @@ const HomePage = async () => {
       <LearningModules featuresData={landingData.features ?? undefined} />
       <GetChildMobileReady benefitsData={landingData.benefits ?? undefined} />
       <WhyMobilklar whyMobilklarData={landingData.whyMobilklar ?? undefined} quoteData={landingData.quote ?? undefined} />
-      <ParentReviews />
+      <ParentReviews quote={landingData.quote ?? undefined} />
       <AboutUs aboutData={landingData.about ?? undefined} />
     </section>
   );

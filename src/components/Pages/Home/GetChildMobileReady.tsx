@@ -26,7 +26,7 @@ const GetChildMobileReady: React.FC<GetChildMobileReadyProps> = ({ benefitsData 
         <h2 className="text-md sm:text-xl md:text-3xl lg:text-[48px] font-bold text-gray-900">
           {displayTitle}
         </h2>
-        <span className="text-xl md:text-3xl lg:text-5xl">🔥</span>
+  
       </div>
       <div className="max-w-[750px] mx-auto">
         <div className="md:ml-3 grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-2">
