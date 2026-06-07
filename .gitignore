@@ -43,3 +43,4 @@ next-env.d.ts
 .claude
 # ignore Caddy server config
 Caddyfile
+config.bat
